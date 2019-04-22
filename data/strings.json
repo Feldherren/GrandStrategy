@@ -4,11 +4,13 @@
 		"system":
 		{
 			"locations_owned": "Locations held:",
-			"choose_faction": "Play which faction? (input number)",
+			"choose_faction": "Play which faction? (type 'choose [faction name]' or '[play faction name]'",
 			"recruit_success": "You recruit {} {} to the army {} at {}"
 		},
 		"error_messages":
 		{
+			"factionSelect_fail_factionNotFound": "I don't recognise the faction '{}'.",
+			"factionSelect_fail_factionNotPlayable": "Faction '{}' is not playable.",
 			"about_fail_thingNotFound": "You don't know anything about '{}'.",
 			"status_fail_thingNotFound": "You don't know anything about the status of '{}'.",
 			"recruit_fail_unrecognisedUnit": "Unit not recognised.",

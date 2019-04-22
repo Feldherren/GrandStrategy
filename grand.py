@@ -86,8 +86,23 @@ class Army(Item):
 			say(unit + ": " + str(self.units[unit]))
 
 # Game Command Functions
+# TODO: confirm choice before starting play?
+@when('choose FACTION', context="pregame.faction_choice")
+@when('play FACTION', context="pregame.faction_choice")
+def setPlayableFaction(faction):
+	global player_faction
+	if faction in factions:
+		if faction in playable_factions:
+			player_faction = factions.find(faction)
+			player_faction.player_controller = True
+			say(player_faction.intro_text)
+			set_context("playing_game.faction_leader")
+		else:
+			say(strings_data[language]["error_messages"]["factionSelect_fail_factionNotPlayable"].format(faction))
+	else:
+		say(strings_data[language]["error_messages"]["factionSelect_fail_factionNotFound"].format(faction))
 
-@when('about THING')
+@when('about THING', context="playing_game")
 def about(thing):
 	thingy = None
 	if regions.find(thing) is not None:
@@ -106,7 +121,7 @@ def about(thing):
 	else:
 		say(strings_data[language]["error_messages"]["about_fail_thingNotFound"].format(thing))
 
-@when('status THING')
+@when('status THING', context="playing_game")
 def status(thing):
 	thingy = None
 	if regions.find(thing) is not None:
@@ -125,7 +140,7 @@ def status(thing):
 	else:
 		say(strings_data[language]["error_messages"]["status_fail_thingNotFound"].format(thing))
 
-@when('recruit AMOUNT x UNIT at LOCATION to ARMY')
+@when('recruit AMOUNT x UNIT at LOCATION to ARMY', context="playing_game")
 def recruit(amount, unit, location, army):
 	global player_faction
 	# check that the unit exists
@@ -182,21 +197,6 @@ def recruit(amount, unit, location, army):
 	else:
 		say(strings_data[language]["error_messages"]["recruit_fail_unrecognisedUnit"])
 
-# Other Functions
-# TODO: don't acknowledge values outside of the list
-# TODO: can use context to make a proper command for choosing what to play
-def chooseFaction(options):
-	global player_faction
-	i = 0
-	for faction in options:
-		print(str(i+1) + ": " + faction)
-		i += 1
-	say(strings_data[language]["system"]["choose_faction"])
-	faction_choice = int(input("> "))-1
-	player_faction = factions.find(options[faction_choice])
-	player_faction.player_controller = True
-	say(player_faction.intro_text)
-
 # takes a string name of unit, returns True/False if recruitable or not
 # TODO: add recruitability checks; factions, regions, locations and maybe improvements can affect this
 # needs support in the JSON, though
@@ -225,7 +225,6 @@ def getLocation(location):
 
 # Loading data
 # TODO: remove requirement for scenarios.json, just find scenario.jsons below data dir
-
 with open(os.path.join("data","scenarios.json")) as scenarios_json:
 	scenarios_data = json.load(scenarios_json)
 
@@ -267,7 +266,7 @@ for location in map_data["locations"]:
 with open(os.path.join("data",scenario_data['scenario']["factions"])) as faction_json:
 	faction_data = json.load(faction_json)
 
-playable_factions = []
+playable_factions = Bag()
 
 for faction in faction_data["factions"]:
 	factions.add(Faction(faction["name"], *faction["aliases"]))
@@ -279,7 +278,7 @@ for faction in faction_data["factions"]:
 	for location in faction["starting_locations"]:
 		new_faction.locations.add(getLocation(location))
 	if faction["playable"]:
-		playable_factions.append(faction["name"])
+		playable_factions.add(new_faction)
 
 # loading and setting up agents
 
@@ -309,7 +308,13 @@ for unit in unit_data["units"]:
 
 # TODO: interface for player choosing faction
 
-chooseFaction(playable_factions)
+set_context('pregame.faction_choice')
+for faction in playable_factions:
+	say(faction.name)
+say(strings_data[language]["system"]["choose_faction"])
+
+start()
+#chooseFaction(playable_factions)
 
 #with open() as faction_json:
 #	faction_data = json.load(faction_json)
@@ -318,5 +323,3 @@ chooseFaction(playable_factions)
 # for scenario in scenario_data['scenarios']:
 # 	print(scenario['name'])
 # 	print(scenario['desc'])
-
-start()
