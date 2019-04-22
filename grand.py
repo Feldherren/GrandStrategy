@@ -10,6 +10,9 @@ from datetime import datetime
 # TODO: don't really want to be throwing strings around except in user interaction; make everything use objects instead?
 # at least have everything consisten (aside from user input, always going to be a string)
 
+# TODO: automatically generate very simple map - numbers, paths (using - | \ /), and a key for where is where?
+# command can be 'map'
+
 # loading system strings
 with open(os.path.join("data","strings.json")) as strings_json:
 	strings_data = json.load(strings_json)
@@ -87,6 +90,7 @@ class Army(Item):
 
 # Game Command Functions
 # TODO: confirm choice before starting play?
+# TODO: option to not respect playable factions - for force-changing factions or something, debug mode?
 @when('choose FACTION', context="pregame.faction_choice")
 @when('play FACTION', context="pregame.faction_choice")
 def setPlayableFaction(faction):
@@ -140,6 +144,7 @@ def status(thing):
 	else:
 		say(strings_data[language]["error_messages"]["status_fail_thingNotFound"].format(thing))
 
+# TODO: really need a more natural way of separating AMOUNT and UNIT to prevent greediness
 @when('recruit AMOUNT x UNIT at LOCATION to ARMY', context="playing_game")
 def recruit(amount, unit, location, army):
 	global player_faction
