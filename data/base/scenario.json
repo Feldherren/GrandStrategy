@@ -1,0 +1,19 @@
+{
+	"scenario":
+	{
+		"name": "Base",
+		"desc": "Base scenario",
+		"factions": "base\\factions.json",
+		"map": "base\\map.json",
+		"units": "base\\units.json",
+		"agents": "base\\commanders.json",
+		"start_date":
+		{
+			"year": 1362,
+			"month": 4,
+			"day": 7
+		},
+		"date_format": "%d %b %Y",
+		"money_term": "Gold"
+	}
+}

@@ -1,0 +1,35 @@
+{
+	"units":
+	[
+		{
+			"name": "Stinger",
+			"plural": "Stingers",
+			"desc": "Braver pixies willing to get closer to their opponents. Armed with cactus spines.",
+			"cost": 1,
+			"strength": 1,
+			"health": 2,
+			"stealth": 40,
+			"traits": ["pixie"]
+		},
+		{
+			"name": "Dragonflier",
+			"plural": "Dragonfliers",
+			"desc": "Pixies riding tamed dragonflies. Flying unit.",
+			"cost": 5,
+			"strength": 2,
+			"health": 3,
+			"stealth": 30,
+			"traits": ["pixie","insect"]
+		},
+		{
+			"name": "Soldier",
+			"plural": "Soldiers",
+			"desc": "A common human soldier, equipped with a sword and chainmail.",
+			"cost": 10,
+			"strength": 10,
+			"health": 10,
+			"stealth": 5,
+			"traits": ["human"]
+		}
+	]
+}

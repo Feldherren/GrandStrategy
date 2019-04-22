@@ -1,0 +1,29 @@
+{
+	"factions":
+	[
+		{
+			"name": "Human Kingdom",
+			"aliases": ["Humans", "Human"],
+			"desc": "Description of human faction goes here.",
+			"starting_money": 100,
+			"playable": true,
+			"intro_text": "Sample intro text for the human kingdom.",
+			"starting_locations": 
+			[
+				"Northwest City"
+			]
+		},
+		{
+			"name": "Desert Pixie Tribes",
+			"aliases": ["Pixie", "Pixies", "Tribes", "Pixie Tribes", "Desert Tribes"],
+			"desc": "Description of pixie faction goes here.",
+			"starting_money": 100,
+			"playable": true,
+			"intro_text": "Sample intro text for the pixie tribes.",
+			"starting_locations": 
+			[
+				"Southeast City"
+			]
+		}
+	]
+}

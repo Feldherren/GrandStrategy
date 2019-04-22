@@ -1,0 +1,10 @@
+{
+	"scenarios":
+	[
+		{
+			"name": "Base",
+			"short_desc": "Base scenario",
+			"scenario_json": "base\\scenario.json"
+		}
+	]
+}

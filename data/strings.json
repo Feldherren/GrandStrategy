@@ -1,0 +1,23 @@
+{
+	"en":
+	{
+		"system":
+		{
+			"locations_owned": "Locations held:",
+			"choose_faction": "Play which faction? (input number)",
+			"recruit_success": "You recruit {} {} to the army {} at {}"
+		},
+		"error_messages":
+		{
+			"about_fail_thingNotFound": "You don't know anything about '{}'.",
+			"status_fail_thingNotFound": "You don't know anything about the status of '{}'.",
+			"recruit_fail_unrecognisedUnit": "Unit not recognised.",
+			"recruit_fail_unavailableUnit": "You can't recruit that unit.",
+			"recruit_fail_valueError": "Please enter a valid number of units to recruit.",
+			"recruit_fail_notEnoughMoney": "You can't afford {} {}.",
+			"recruit_fail_locationUnknown": "There is no location called {}.",
+			"recruit_fail_armyNotAtLocation": "{} is not at {}.",
+			"recruit_fail_locationUnowned": "You don't own {}."
+		}
+	}
+}

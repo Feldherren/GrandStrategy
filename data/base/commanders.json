@@ -1,0 +1,15 @@
+{
+	"agent_term": "commander",
+	"agent_plural": "commanders",
+	"agents":
+	[
+		{
+			"name": "Drake Starr",
+			"desc": "Description of commander goes here."
+		},
+		{
+			"name": "Briar Rose",
+			"desc": "Description of commander goes here."
+		}
+	]
+}
