@@ -5,7 +5,8 @@ from pprint import pprint
 import os
 import sys
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
+import calendar
 
 # TODO: don't really want to be throwing strings around except in user interaction; make everything use objects instead?
 # at least have everything consisten (aside from user input, always going to be a string)
@@ -26,6 +27,9 @@ language = default_language # TODO: change this with a selection
 
 global scenario_data
 global current_date
+current_date = datetime.now()
+global wait_unit
+global wait_period
 global playable_factions
 global player_faction
 
@@ -34,6 +38,7 @@ armies = Bag()
 regions = Bag()
 factions = Bag()
 units = Bag()
+
 
 class Region(Item):
 	def about(self):
@@ -100,11 +105,19 @@ def setScenario(scenario):
 	global scenarios
 	global scenario_data
 	global current_date
+	global wait_unit
+	global wait_period
 	if scenario in scenarios:
 		with open(scenarios[scenario]) as scenario_json:
 			scenario_data = json.load(scenario_json)
+
 		# setting up start date
 		current_date = datetime(scenario_data["scenario"]["start_date"]["year"], scenario_data["scenario"]["start_date"]["month"], scenario_data["scenario"]["start_date"]["day"])
+
+		# setting up the amount of time '1 turn' takes; currently takes days
+		# TODO: some way of handling months, years
+		wait_unit = scenario_data["scenario"]["time_step"]["unit"]
+		wait_period = scenario_data["scenario"]["time_step"]["amount"]
 
 		# loading and setting up game map
 		with open(os.path.join("data",scenario_data['scenario']["map"])) as map_json:
@@ -296,6 +309,33 @@ def recruit(amount, unit, location, army):
 	else:
 		say(strings_data[language]["error_messages"]["recruit_fail_unrecognisedUnit"])
 
+# waits for a specified period of time
+# AI handling and execution of delayed stuff like orders needs to go here
+@when("wait")
+@when("advance time")
+@when("pass time")
+@when("pass")
+def wait():
+	# advancing the date
+	global current_date
+	global wait_unit
+	global wait_period
+	if wait_unit == "day" or wait_unit == "days":
+		current_date += timedelta(days=wait_period)
+	elif wait_unit == "month" or wait_unit == "months":
+		for x in range(0,wait_period):
+			current_date += timedelta(calendar.monthrange(current_date.year, current_date.month)[1])
+	elif wait_unit == "year" or wait_unit == "years":
+		for x in range(0,wait_period):
+			for y in range(0,12):
+				current_date += timedelta(calendar.monthrange(current_date.year, current_date.month)[1])
+
+# debug command
+@when("debug OPTION")
+def debug(option):
+	if option == "context":
+		say(get_context())
+
 # takes a string name of unit, returns True/False if recruitable or not
 # TODO: add recruitability checks; factions, regions, locations and maybe improvements can affect this
 # needs support in the JSON, though
@@ -346,12 +386,14 @@ for scenario in scenarios:
 
 say(strings_data[language]["system"]["choose_scenario"])
 
-start()
 
 def prompt():
-	if get_context() == "playing_game":
-		return '{shown_date} > '.format(shown_date=current_date.strftime(scenario_data["scenario"]["date_format"]))
+	global current_date
+	if get_context() == "pregame.scenario_choice":
+		return '> '
 	else:
-		return "> "
+		return '{shown_date} > '.format(shown_date=current_date.strftime(scenario_data["scenario"]["date_format"]))
 
 adventurelib.prompt = prompt
+
+start()
