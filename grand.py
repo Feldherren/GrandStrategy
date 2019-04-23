@@ -92,6 +92,8 @@ class Army(Item):
 			say(unit + ": " + str(self.units[unit]))
 
 # function for setting scenario. Effectively the first thing the player does in a game, and leads into choosing faction.
+# loads all the data; new json has to be loaded here
+# seems to work fine without setting the Bags global; watch for any issues from this
 @when('play SCENARIO', context="pregame.scenario_choice")
 @when('choose SCENARIO', context="pregame.scenario_choice")
 def setScenario(scenario):
