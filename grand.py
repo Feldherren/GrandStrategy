@@ -24,6 +24,9 @@ language = default_language # TODO: change this with a selection
 
 # TODO: set up logging file
 
+global scenario_data
+global current_date
+global playable_factions
 global player_faction
 
 agents = Bag()
@@ -88,10 +91,91 @@ class Army(Item):
 		for unit in self.units:
 			say(unit + ": " + str(self.units[unit]))
 
-# TODO: implement this once we have better searching for scenario.json files
-@when('SCENARIO', context="pregame.scenario_choice")
+# function for setting scenario. Effectively the first thing the player does in a game, and leads into choosing faction.
+@when('play SCENARIO', context="pregame.scenario_choice")
+@when('choose SCENARIO', context="pregame.scenario_choice")
 def setScenario(scenario):
-	return True
+	global scenarios
+	global scenario_data
+	global current_date
+	if scenario in scenarios:
+		with open(scenarios[scenario]) as scenario_json:
+			scenario_data = json.load(scenario_json)
+		# setting up start date
+		current_date = datetime(scenario_data["scenario"]["start_date"]["year"], scenario_data["scenario"]["start_date"]["month"], scenario_data["scenario"]["start_date"]["day"])
+
+		# loading and setting up game map
+		with open(os.path.join("data",scenario_data['scenario']["map"])) as map_json:
+			map_data = json.load(map_json)
+
+		for region in map_data["regions"]:
+			regions.add(Region(region["name"]))
+			new_region = regions.find(region["name"])
+			new_region.desc = region["desc"]
+			new_region.locations = Bag()
+
+		for location in map_data["locations"]:
+			if regions.find(location["region"]) is not None:
+				region = regions.find(location["region"])
+				region.locations.add(Location(location["name"]))
+				new_location = region.locations.find(location["name"])
+				new_location.desc = location["desc"]
+			else:
+				logging.error("when creating location " + location["name"] + " could not find region " + location["region"])
+
+		# loading and setting up factions
+
+		with open(os.path.join("data",scenario_data['scenario']["factions"])) as faction_json:
+			faction_data = json.load(faction_json)
+
+		global playable_factions
+		playable_factions = Bag()
+
+		for faction in faction_data["factions"]:
+			factions.add(Faction(faction["name"], *faction["aliases"]))
+			new_faction = factions.find(faction["name"])
+			new_faction.desc = faction["desc"]
+			new_faction.intro_text = faction["intro_text"]
+			new_faction.money = faction["starting_money"]
+			new_faction.locations = Bag()
+			for location in faction["starting_locations"]:
+				new_faction.locations.add(getLocation(location))
+			if faction["playable"]:
+				playable_factions.add(new_faction)
+
+		# loading and setting up agents
+
+		with open(os.path.join("data",scenario_data['scenario']["agents"])) as agent_json:
+			agent_data = json.load(agent_json)
+
+		for agent in agent_data["agents"]:
+			agents.add(Agent(agent["name"]))
+			new_agent = agents.find(agent["name"])
+			new_agent.desc = agent["desc"]
+
+		# loading and setting up units
+
+		with open(os.path.join("data",scenario_data['scenario']["units"])) as unit_json:
+			unit_data = json.load(unit_json)
+
+		for unit in unit_data["units"]:
+			units.add(Unit(unit["name"], unit["plural"]))
+			new_unit = units.find(unit["name"])
+			new_unit.name = unit["name"]
+			new_unit.plural = unit["plural"]
+			new_unit.desc = unit["desc"]
+			new_unit.cost = unit["cost"]
+			new_unit.strength = unit["strength"]
+			new_unit.health = unit["health"]
+			new_unit.stealth = unit["stealth"]
+
+		set_context('pregame.faction_choice')
+		for faction in playable_factions:
+			say(faction.name)
+		say(strings_data[language]["system"]["choose_faction"])
+
+	else:
+		say(strings_data[language]["error_messages"]["scenarioSelect_fail_scenarioNotFound"].format(scenario))
 
 # Game Command Functions
 # TODO: confirm choice before starting play?
@@ -101,6 +185,7 @@ def setScenario(scenario):
 @when('play FACTION', context="pregame.faction_choice")
 @when('choose FACTION', context="pregame.faction_choice")
 def setPlayableFaction(faction):
+	global playable_factions
 	global player_faction
 	if faction in factions:
 		if faction in playable_factions:
@@ -238,101 +323,33 @@ def getLocation(location):
 
 # Loading data
 # TODO: remove requirement for scenarios.json, just find scenario.jsons below data dir
-with open(os.path.join("data","scenarios.json")) as scenarios_json:
-	scenarios_data = json.load(scenarios_json)
+# with open(os.path.join("data","scenarios.json")) as scenarios_json:
+# 	scenarios_data = json.load(scenarios_json)
 
-# TODO: choose scenario; just provide a menu here
-# we're just going to assume base scenario, though
-with open(os.path.join("data",scenarios_data['scenarios'][0]["scenario_json"])) as scenario_json:
-	scenario_data = json.load(scenario_json)
+set_context('pregame.scenario_choice')
+scenario_files = []
+for root, dirs, files in os.walk("data"):
+    if "scenario.json" in files:
+        scenario_files.append(os.path.join(root, "scenario.json"))
 
-# setting up start date
-current_date = datetime(scenario_data["scenario"]["start_date"]["year"], scenario_data["scenario"]["start_date"]["month"], scenario_data["scenario"]["start_date"]["day"])
+global scenarios
+scenarios = {}
+for sc in scenario_files:
+	with open(sc) as scenario_json:
+		scenario_data = json.load(scenario_json)
+		scenarios[scenario_data["scenario"]["name"].lower()] = sc
 
-def prompt():
-    return '{shown_date} > '.format(shown_date=current_date.strftime(scenario_data["scenario"]["date_format"]))
+for scenario in scenarios:
+	say(scenario)
 
-adventurelib.prompt = prompt
-
-# loading and setting up game map
-
-with open(os.path.join("data",scenario_data['scenario']["map"])) as map_json:
-	map_data = json.load(map_json)
-
-for region in map_data["regions"]:
-	regions.add(Region(region["name"]))
-	new_region = regions.find(region["name"])
-	new_region.desc = region["desc"]
-	new_region.locations = Bag()
-
-for location in map_data["locations"]:
-	if regions.find(location["region"]) is not None:
-		region = regions.find(location["region"])
-		region.locations.add(Location(location["name"]))
-		new_location = region.locations.find(location["name"])
-		new_location.desc = location["desc"]
-	else:
-		logging.error("when creating location " + location["name"] + " could not find region " + location["region"])
-
-# loading and setting up factions
-
-with open(os.path.join("data",scenario_data['scenario']["factions"])) as faction_json:
-	faction_data = json.load(faction_json)
-
-playable_factions = Bag()
-
-for faction in faction_data["factions"]:
-	factions.add(Faction(faction["name"], *faction["aliases"]))
-	new_faction = factions.find(faction["name"])
-	new_faction.desc = faction["desc"]
-	new_faction.intro_text = faction["intro_text"]
-	new_faction.money = faction["starting_money"]
-	new_faction.locations = Bag()
-	for location in faction["starting_locations"]:
-		new_faction.locations.add(getLocation(location))
-	if faction["playable"]:
-		playable_factions.add(new_faction)
-
-# loading and setting up agents
-
-with open(os.path.join("data",scenario_data['scenario']["agents"])) as agent_json:
-	agent_data = json.load(agent_json)
-
-for agent in agent_data["agents"]:
-	agents.add(Agent(agent["name"]))
-	new_agent = agents.find(agent["name"])
-	new_agent.desc = agent["desc"]
-
-# loading and setting up units
-
-with open(os.path.join("data",scenario_data['scenario']["units"])) as unit_json:
-	unit_data = json.load(unit_json)
-
-for unit in unit_data["units"]:
-	units.add(Unit(unit["name"], unit["plural"]))
-	new_unit = units.find(unit["name"])
-	new_unit.name = unit["name"]
-	new_unit.plural = unit["plural"]
-	new_unit.desc = unit["desc"]
-	new_unit.cost = unit["cost"]
-	new_unit.strength = unit["strength"]
-	new_unit.health = unit["health"]
-	new_unit.stealth = unit["stealth"]
-
-# TODO: interface for player choosing faction
-
-set_context('pregame.faction_choice')
-for faction in playable_factions:
-	say(faction.name)
-say(strings_data[language]["system"]["choose_faction"])
+say(strings_data[language]["system"]["choose_scenario"])
 
 start()
-#chooseFaction(playable_factions)
 
-#with open() as faction_json:
-#	faction_data = json.load(faction_json)
+def prompt():
+	if get_context() == "playing_game":
+		return '{shown_date} > '.format(shown_date=current_date.strftime(scenario_data["scenario"]["date_format"]))
+	else:
+		return "> "
 
-#pprint(scenario_data)
-# for scenario in scenario_data['scenarios']:
-# 	print(scenario['name'])
-# 	print(scenario['desc'])
+adventurelib.prompt = prompt

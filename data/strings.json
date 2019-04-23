@@ -3,12 +3,14 @@
 	{
 		"system":
 		{
-			"locations_owned": "Locations held:",
+			"choose_scenario": "Play which scenario? (type 'play/choose SCENARIONAME')",
 			"choose_faction": "Play which faction? (type 'play/choose FACTIONNAME')",
+			"locations_owned": "Locations held:",
 			"recruit_success": "You recruit {} {} to the army {} at {}"
 		},
 		"error_messages":
 		{
+			"scenarioSelect_fail_scenarioNotFound": "I don't recognise the scenario '{}'.",
 			"factionSelect_fail_factionNotFound": "I don't recognise the faction '{}'.",
 			"factionSelect_fail_factionNotPlayable": "Faction '{}' is not playable.",
 			"about_fail_thingNotFound": "You don't know anything about '{}'.",
