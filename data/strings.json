@@ -4,7 +4,7 @@
 		"system":
 		{
 			"locations_owned": "Locations held:",
-			"choose_faction": "Play which faction? (type 'choose [faction name]' or '[play faction name]'",
+			"choose_faction": "Play which faction? (type 'play/choose FACTIONNAME')",
 			"recruit_success": "You recruit {} {} to the army {} at {}"
 		},
 		"error_messages":
