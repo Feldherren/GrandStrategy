@@ -88,11 +88,18 @@ class Army(Item):
 		for unit in self.units:
 			say(unit + ": " + str(self.units[unit]))
 
+# TODO: implement this once we have better searching for scenario.json files
+@when('SCENARIO', context="pregame.scenario_choice")
+def setScenario(scenario):
+	return True
+
 # Game Command Functions
 # TODO: confirm choice before starting play?
 # TODO: option to not respect playable factions - for force-changing factions or something, debug mode?
-@when('choose FACTION', context="pregame.faction_choice")
+# not using just 'FACTION' as that blocks quit/help/any other commands
+#@when('FACTION', context="pregame.faction_choice")
 @when('play FACTION', context="pregame.faction_choice")
+@when('choose FACTION', context="pregame.faction_choice")
 def setPlayableFaction(faction):
 	global player_faction
 	if faction in factions:
@@ -222,11 +229,12 @@ def locationIsOwned(faction,location):
 
 # takes a string name, gets a location with that name if it exists; otherwise returns None
 def getLocation(location):
-	found_location = None
 	for region in regions:
 		if region.locations.find(location) is not None:
-			found_location = region.locations.find(location)
-	return found_location
+			return region.locations.find(location)
+	return None
+
+#def getUnit
 
 # Loading data
 # TODO: remove requirement for scenarios.json, just find scenario.jsons below data dir
