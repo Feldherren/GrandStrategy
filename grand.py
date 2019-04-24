@@ -34,7 +34,6 @@ global playable_factions
 global player_faction
 
 agents = Bag()
-armies = Bag()
 regions = Bag()
 factions = Bag()
 units = Bag()
@@ -153,6 +152,7 @@ def setScenario(scenario):
 			new_faction.intro_text = faction["intro_text"]
 			new_faction.money = faction["starting_money"]
 			new_faction.locations = Bag()
+			new_faction.armies = Bag()
 			for location in faction["starting_locations"]:
 				new_faction.locations.add(getLocation(location))
 			if faction["playable"]:
@@ -244,8 +244,8 @@ def status(thing):
 		thingy = factions.find(thing)
 	if agents.find(thing) is not None:
 		thingy = agents.find(thing)
-	if armies.find(thing) is not None:
-		thingy = armies.find(thing)
+	if getArmy(thing) is not None:
+		thingy = getArmy(thing)
 	if thingy is not None:
 		thingy.status()
 	else:
@@ -274,30 +274,33 @@ def recruit(amount, unit, location, army):
 						# check we can afford it
 						cost = unit_recruited.cost * amt
 						if player_faction.money >= cost:
-							if army not in armies:
-								# make an army
-								armies.add(Army(army))
-								target_army = armies.find(army)
-								target_army.units = {}
-								target_army.location = location
-								say(strings_data[language]["system"]["makeArmy_success"].format(army))
-							else:
-								# check army is at location
-								target_army = armies.find(army)
-							if target_army.location is location:
-								# remove cost
-								player_faction.money -= cost
-								# add units to existing army
-								if unit in target_army.units:
-									target_army.units[unit] += amt
+							if nameIsUnused(army):
+								if getArmy(army) is None:
+									# make an army
+									player_faction.armies.add(Army(army))
+									target_army = player_faction.armies.find(army)
+									target_army.units = {}
+									target_army.location = location
+									say(strings_data[language]["system"]["makeArmy_success"].format(army))
 								else:
-									target_army.units[unit] = amt
-								if amt > 1:
-									say(strings_data[language]["system"]["recruit_success"].format(amount, units.find(unit).plural, army, location))
+									# check army is at location
+									target_army = getArmy(army)
+								if target_army.location == location:
+									# remove cost
+									player_faction.money -= cost
+									# add units to existing army
+									if unit in target_army.units:
+										target_army.units[unit] += amt
+									else:
+										target_army.units[unit] = amt
+									if amt > 1:
+										say(strings_data[language]["system"]["recruit_success"].format(amount, units.find(unit).plural, army, location))
+									else:
+										say(strings_data[language]["system"]["recruit_success"].format(amount, units.find(unit).name, army, location))
 								else:
-									say(strings_data[language]["system"]["recruit_success"].format(amount, units.find(unit).name, army, location))
+									say(strings_data[language]["error_messages"]["recruit_fail_armyNotAtLocation"].format(army, location))
 							else:
-								say(strings_data[language]["error_messages"]["recruit_fail_armyNotAtLocation"].format(army, location))
+								say(strings_data[language]["error_messages"]["name_fail_alreadyInUse"].format(army))
 						else:
 							if amt > 1:
 								say(strings_data[language]["error_messages"]["recruit_fail_notEnoughMoney"].format(amount, unit_recruited.plural))
@@ -314,27 +317,31 @@ def recruit(amount, unit, location, army):
 @when("merge ARMYA into ARMYB")
 @when("combine ARMYA with ARMYB")
 def merge_armies(armya, armyb):
-	army_1 = armies.find(armya)
+	global player_faction
+	army_1 = player_faction.armies.find(armya)
 	if army_1 == None:
 		say(strings_data[language]["error_messages"]["merge_fail_armyNotFound"].format(armya))
-	army_2 = armies.find(armyb)
-	if army_2 == None:
-		armies.add(Army(armyb))
-		army_2 = armies.find(armyb)
-		army_2.units = {}
-		army_2.location = army_1.location
-		say(strings_data[language]["system"]["makeArmy_success"].format(armyb))
-	if army_1.location == army_2.location:
-		for unit in army_1.units:
-			if unit in army_2.units:
-				army_2.units[unit] += army_1.units[unit]
-			else:
-				army_2.units[unit] = army_1.units[unit]
-			# and now just removing army1 from existence
-			armies.take(armya)
-			say(strings_data[language]["system"]["mergeArmy_success"].format(armya,armyb))
+	army_2 = player_faction.armies.find(armyb)
+	if nameIsUnused(armyb, skip=['army']):
+		if army_2 == None:
+			player_faction.armies.add(Army(armyb))
+			army_2 = player_faction.armies.find(armyb)
+			army_2.units = {}
+			army_2.location = army_1.location
+			say(strings_data[language]["system"]["makeArmy_success"].format(armyb))
+		if army_1.location == army_2.location:
+			for unit in army_1.units:
+				if unit in army_2.units:
+					army_2.units[unit] += army_1.units[unit]
+				else:
+					army_2.units[unit] = army_1.units[unit]
+				# and now just removing army1 from existence
+				player_faction.armies.take(armya)
+				say(strings_data[language]["system"]["mergeArmy_success"].format(armya,armyb))
+		else:
+			say(strings_data[language]["error_messages"]["merge_fail_locationDifference"].format(armya, armyb))
 	else:
-		say(strings_data[language]["error_messages"]["merge_fail_locationDifference"].format(armya, armyb))
+		say(strings_data[language]["error_messages"]["name_fail_alreadyInUse"].format(armyb))
 
 # waits for a specified period of time
 # AI handling and execution of delayed stuff like orders needs to go here
@@ -391,7 +398,33 @@ def getLocation(location):
 			return region.locations.find(location)
 	return None
 
-#def getUnit
+# takes a string name, searches all factions for an army with that name if it exists; otherwise returns None
+def getArmy(army):
+	for faction in factions:
+		if faction.armies.find(army) is not None:
+			return faction.armies.find(army)
+	return None
+
+# takes a string name, makes sure nothing is already using it
+# skips any type in the []
+# TODO: add ifs for skip, as necessary
+def nameIsUnused(name, skip = []):
+	unused = True
+	if regions.find(name) is not None:
+		unused = False
+	for region in regions:
+		if region.locations.find(name) is not None:
+			unused = False
+	if factions.find(name) is not None:
+		unused = False
+	if agents.find(name) is not None:
+		unused = False
+	if units.find(name) is not None:
+		unused = False
+	if "army" not in skip:
+		if getArmy(name) is not None:
+			unused = False
+	return unused
 
 # Loading data
 

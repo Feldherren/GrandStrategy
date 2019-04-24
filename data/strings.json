@@ -25,7 +25,8 @@
 			"recruit_fail_armyNotAtLocation": "{} is not at {}.",
 			"recruit_fail_locationUnowned": "You don't own {}.",
 			"merge_fail_armyNotFound": "Can't find any army named {}.",
-			"merge_fail_locationDifference": "{} and {} are not at the same location."
+			"merge_fail_locationDifference": "{} and {} are not at the same location.",
+			"name_fail_alreadyInUse": "Something is already called {}."
 		}
 	}
 }
