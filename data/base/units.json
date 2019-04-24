@@ -5,7 +5,10 @@
 			"name": "Stinger",
 			"plural": "Stingers",
 			"desc": "Braver pixies willing to get closer to their opponents. Armed with cactus spines.",
-			"cost": 1,
+			"cost": 
+			{
+				"gold":1
+			},
 			"strength": 1,
 			"health": 2,
 			"stealth": 40,
@@ -15,7 +18,10 @@
 			"name": "Dragonflier",
 			"plural": "Dragonfliers",
 			"desc": "Pixies riding tamed dragonflies. Flying unit.",
-			"cost": 5,
+			"cost": 
+			{
+				"gold":5
+			},
 			"strength": 2,
 			"health": 3,
 			"stealth": 30,
@@ -25,7 +31,10 @@
 			"name": "Soldier",
 			"plural": "Soldiers",
 			"desc": "A common human soldier, equipped with a sword and chainmail.",
-			"cost": 10,
+			"cost": 
+			{
+				"gold":10
+			},
 			"strength": 10,
 			"health": 10,
 			"stealth": 5,

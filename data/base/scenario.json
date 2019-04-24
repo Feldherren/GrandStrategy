@@ -19,6 +19,13 @@
 			"unit": "months"
 		},
 		"date_format": "%d %b %Y",
-		"money_term": "Gold"
+		"resources":
+		[
+			{
+				"name":"gold",
+				"plural":"gold",
+				"desc":"Gold coins of varying purity, minted anywhere of note."
+			}
+		]
 	}
 }

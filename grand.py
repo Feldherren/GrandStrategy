@@ -37,7 +37,7 @@ agents = Bag()
 regions = Bag()
 factions = Bag()
 units = Bag()
-
+resources = Bag()
 
 class Region(Item):
 	def about(self):
@@ -56,17 +56,18 @@ class Location(Item):
 	def status(self):
 		say(self.name)
 
+# TODO: not sure the way we get player resources is consistent
 class Faction(Item):
 	def about(self):
 		say(self.name)
 		say(self.desc)
 	def status(self):
-		global player_faction
 		say(self.name)
-		# only show money if player owns the faction
+		# only show resources if player owns the faction
 		# TODO: can find it out by spying, otherwise?
 		if self == player_faction:
-			say(scenario_data["scenario"]["money_term"] +  ": " + str(self.money))
+			for resource in self.resources:
+				say(resources.find(resource).status())
 		say(strings_data[language]["system"]["locations_owned"])
 		for location in self.locations:
 			say(location)
@@ -78,11 +79,24 @@ class Agent(Item):
 	def status(self):
 		say(self.name)
 
+# TODO: not sure the way we get player resources is consistent
+class Resource(Item):
+	def about(self):
+		say(self.name + " (plural: " + self.plural + ")")
+		say(self.desc)
+	def status(self):
+		say(strings_data[language]["system"]["resource_amount"].format(player_faction.resources[self.name], self.name))
+
 class Unit(Item):
 	def about(self):
 		say(self.name + " (plural: " + self.plural + ")")
 		say(self.desc)
-		say("Cost: " + str(self.cost))
+		say("Cost: ")
+		for resource in self.cost:
+			if self.cost[resource] > 1:
+				say("{} {}".format(self.cost[resource], resources.find(resource).plural))
+			else:
+				say("{} {}".format(self.cost[resource], resources.find(resource).name))
 		say("Health: " + str(self.health))
 		say("Strength: " + str(self.strength))
 		say("Stealth: " + str(self.stealth))
@@ -112,6 +126,13 @@ def setScenario(scenario):
 
 		# setting up start date
 		current_date = datetime(scenario_data["scenario"]["start_date"]["year"], scenario_data["scenario"]["start_date"]["month"], scenario_data["scenario"]["start_date"]["day"])
+
+		# setting up resources
+		for resource in scenario_data["scenario"]["resources"]:
+			resources.add(Resource(resource["name"],resource["plural"]))
+			new_resource = resources.find(resource["name"])
+			new_resource.plural = resource["plural"]
+			new_resource.desc = resource["desc"]
 
 		# setting up the amount of time '1 turn' takes; currently takes days
 		# TODO: some way of handling months, years
@@ -150,7 +171,9 @@ def setScenario(scenario):
 			new_faction = factions.find(faction["name"])
 			new_faction.desc = faction["desc"]
 			new_faction.intro_text = faction["intro_text"]
-			new_faction.money = faction["starting_money"]
+			new_faction.resources = {}
+			for resource in faction["starting_resources"]:
+				new_faction.resources[resource] = faction["starting_resources"][resource]
 			new_faction.locations = Bag()
 			new_faction.armies = Bag()
 			for location in faction["starting_locations"]:
@@ -179,7 +202,9 @@ def setScenario(scenario):
 			new_unit.name = unit["name"]
 			new_unit.plural = unit["plural"]
 			new_unit.desc = unit["desc"]
-			new_unit.cost = unit["cost"]
+			new_unit.cost = {}
+			for resource in unit["cost"]:
+				new_unit.cost[resource] = unit["cost"][resource]
 			new_unit.strength = unit["strength"]
 			new_unit.health = unit["health"]
 			new_unit.stealth = unit["stealth"]
@@ -227,6 +252,8 @@ def about(thing):
 		thingy = agents.find(thing)
 	if units.find(thing) is not None:
 		thingy = units.find(thing)
+	if resources.find(thing) is not None:
+		thingy = resources.find(thing)
 	if thingy is not None:
 		thingy.about()
 	else:
@@ -246,6 +273,8 @@ def status(thing):
 		thingy = agents.find(thing)
 	if getArmy(thing) is not None:
 		thingy = getArmy(thing)
+	if resources.find(thing) is not None:
+		thingy = resources.find(thing)
 	if thingy is not None:
 		thingy.status()
 	else:
@@ -272,9 +301,13 @@ def recruit(amount, unit, location, army):
 					# check location is owned
 					if (locationIsOwned(player_faction.name, location)):
 						# check we can afford it
-						cost = unit_recruited.cost * amt
-						if player_faction.money >= cost:
-							if nameIsUnused(army):
+						affordable = True
+						for resource in unit_recruited.cost:
+							if player_faction.resources[resource] < unit_recruited.cost[resource]*amt:
+								affordable = False
+								say(strings_data[language]["error_messages"]["purchase_fail_notEnoughResource"].format(resource, unit_recruited.cost[resource], player_faction.resources[resource]))
+						if affordable:
+							if nameIsUnused(army, skip=["army"]):
 								if getArmy(army) is None:
 									# make an army
 									player_faction.armies.add(Army(army))
@@ -286,8 +319,9 @@ def recruit(amount, unit, location, army):
 									# check army is at location
 									target_army = getArmy(army)
 								if target_army.location == location:
-									# remove cost
-									player_faction.money -= cost
+									# remove resources used
+									for resource in unit_recruited.cost:
+										player_faction.resources[resource] -= unit_recruited.cost[resource]*amt
 									# add units to existing army
 									if unit in target_army.units:
 										target_army.units[unit] += amt
@@ -301,11 +335,6 @@ def recruit(amount, unit, location, army):
 									say(strings_data[language]["error_messages"]["recruit_fail_armyNotAtLocation"].format(army, location))
 							else:
 								say(strings_data[language]["error_messages"]["name_fail_alreadyInUse"].format(army))
-						else:
-							if amt > 1:
-								say(strings_data[language]["error_messages"]["recruit_fail_notEnoughMoney"].format(amount, unit_recruited.plural))
-							else:
-								say(strings_data[language]["error_messages"]["recruit_fail_notEnoughMoney"].format(amount, unit_recruited.name))
 					else:
 						say(strings_data[language]["error_messages"]["recruit_fail_locationUnowned"].format(location))
 				else:
