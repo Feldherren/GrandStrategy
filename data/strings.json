@@ -6,7 +6,9 @@
 			"choose_scenario": "Play which scenario? (type 'play/choose SCENARIONAME')",
 			"choose_faction": "Play which faction? (type 'play/choose FACTIONNAME')",
 			"locations_owned": "Locations held:",
-			"recruit_success": "You recruit {} {} to the army {} at {}"
+			"recruit_success": "You recruit {} {} to the army {} at {}",
+			"makeArmy_success": "{} successfully created.",
+			"mergeArmy_success": "{} successfully merged into {}."
 		},
 		"error_messages":
 		{
@@ -21,7 +23,9 @@
 			"recruit_fail_notEnoughMoney": "You can't afford {} {}.",
 			"recruit_fail_locationUnknown": "There is no location called {}.",
 			"recruit_fail_armyNotAtLocation": "{} is not at {}.",
-			"recruit_fail_locationUnowned": "You don't own {}."
+			"recruit_fail_locationUnowned": "You don't own {}.",
+			"merge_fail_armyNotFound": "Can't find any army named {}.",
+			"merge_fail_locationDifference": "{} and {} are not at the same location."
 		}
 	}
 }
