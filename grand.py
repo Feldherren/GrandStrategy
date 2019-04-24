@@ -134,8 +134,7 @@ def setScenario(scenario):
 			new_resource.plural = resource["plural"]
 			new_resource.desc = resource["desc"]
 
-		# setting up the amount of time '1 turn' takes; currently takes days
-		# TODO: some way of handling months, years
+		# setting up the amount of time '1 turn' takes; days, months and years are valid
 		wait_unit = scenario_data["scenario"]["time_step"]["unit"]
 		wait_period = scenario_data["scenario"]["time_step"]["amount"]
 
@@ -218,25 +217,68 @@ def setScenario(scenario):
 		say(strings_data[language]["error_messages"]["scenarioSelect_fail_scenarioNotFound"].format(scenario))
 
 # Game Command Functions
+
+# sets the player in debug mode
+# sounds like a cheat code; it's just a thing from Niven's books
+# TODO: debug mode commands, and stuff
+# currently just lets you use a command to set your faction whenever
+# may need reapplying whenever?
+@when("tee tee hatch nex ool", context="playing_game")
+def toggleWizardMode():
+	if get_context() == "playing_game.debug":
+		set_context("playing_game.faction_leader") # TODO; if we add other subcontexts of playing_game, make sure this part sets it back properly
+		say(strings_data[language]["system"]["debugMode_disabled"])
+	else:
+		set_context("playing_game.debug")
+		say(strings_data[language]["system"]["debugMode_enabled"])
+
 # TODO: confirm choice before starting play?
 # TODO: option to not respect playable factions - for force-changing factions or something, debug mode?
-# not using just 'FACTION' as that blocks quit/help/any other commands
-#@when('FACTION', context="pregame.faction_choice")
 @when('play FACTION', context="pregame.faction_choice")
 @when('choose FACTION', context="pregame.faction_choice")
+@when('debug play FACTION', context="playing_game.debug")
+@when('debug choose FACTION', context="playing_game.debug")
 def setPlayableFaction(faction):
 	global playable_factions
 	global player_faction
 	if faction in factions:
-		if faction in playable_factions:
+		if get_context() != "playing_game.debug":
+			if faction in playable_factions:
+				player_faction = factions.find(faction)
+				player_faction.player_controller = True
+				say(player_faction.intro_text)
+				set_context("playing_game.faction_leader")
+			else:
+				say(strings_data[language]["error_messages"]["factionSelect_fail_factionNotPlayable"].format(faction))
+		else:
+			player_faction.player_controller = False # assuming you may be using it from controlling another faction
 			player_faction = factions.find(faction)
 			player_faction.player_controller = True
-			say(player_faction.intro_text)
-			set_context("playing_game.faction_leader")
-		else:
-			say(strings_data[language]["error_messages"]["factionSelect_fail_factionNotPlayable"].format(faction))
+			say(strings_data[language]["system"]["debugMode_switchFaction"].format(faction))
+			set_context("playing_game.debug")
 	else:
 		say(strings_data[language]["error_messages"]["factionSelect_fail_factionNotFound"].format(faction))
+
+# TODO: I don't like just using 'faction' for whatever the player can play. Should it be customisable?
+# TODO: make sure everything that should be listed is listed here
+@when("list THING", context="playing_game")
+def list(thing):
+	if thing == "region" or thing == "regions":
+		for region in regions:
+			say(region)
+	if thing == "location" or thing == "locations":
+		for region in regions:
+			for location in region.locations:
+				say(location.name + " (" + region.name + ")")
+	if thing == "faction" or thing == "factions":
+		for faction in factions:
+			say(faction)
+	if thing == "resource" or thing == "resources":
+		for resource in resources:
+			say(resource)
+	if thing == "unit" or thing == "units":
+		for unit in units:
+			say(unit)
 
 @when('about THING', context="playing_game")
 def about(thing):
@@ -342,7 +384,6 @@ def recruit(amount, unit, location, army):
 	else:
 		say(strings_data[language]["error_messages"]["recruit_fail_unrecognisedUnit"])
 
-# TODO: find some 
 @when("merge ARMYA into ARMYB")
 @when("combine ARMYA with ARMYB")
 def merge_armies(armya, armyb):
@@ -449,6 +490,8 @@ def nameIsUnused(name, skip = []):
 	if agents.find(name) is not None:
 		unused = False
 	if units.find(name) is not None:
+		unused = False
+	if resources.find(name) is not None:
 		unused = False
 	if "army" not in skip:
 		if getArmy(name) is not None:

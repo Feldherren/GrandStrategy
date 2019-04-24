@@ -9,7 +9,10 @@
 			"recruit_success": "You recruit {} {} to the army {} at {}",
 			"makeArmy_success": "{} successfully created.",
 			"mergeArmy_success": "{} successfully merged into {}.",
-			"resource_amount": "You have {} {}."
+			"resource_amount": "You have {} {}.",
+			"debugMode_enabled": "Debug mode enabled.",
+			"debugMode_disabled": "Debug mode disabled.",
+			"debugMode_switchFaction": "Now playing as {}."
 		},
 		"error_messages":
 		{

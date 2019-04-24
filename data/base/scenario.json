@@ -22,8 +22,8 @@
 		"resources":
 		[
 			{
-				"name":"gold",
-				"plural":"gold",
+				"name":"Gold",
+				"plural":"Gold",
 				"desc":"Gold coins of varying purity, minted anywhere of note."
 			}
 		]
