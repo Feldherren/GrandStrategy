@@ -280,6 +280,7 @@ def recruit(amount, unit, location, army):
 								target_army = armies.find(army)
 								target_army.units = {}
 								target_army.location = location
+								say(strings_data[language]["system"]["makeArmy_success"].format(army))
 							else:
 								# check army is at location
 								target_army = armies.find(army)
@@ -309,6 +310,32 @@ def recruit(amount, unit, location, army):
 	else:
 		say(strings_data[language]["error_messages"]["recruit_fail_unrecognisedUnit"])
 
+# TODO: find some 
+@when("merge ARMYA into ARMYB")
+@when("combine ARMYA with ARMYB")
+def merge_armies(armya, armyb):
+	army_1 = armies.find(armya)
+	if army_1 == None:
+		say(strings_data[language]["error_messages"]["merge_fail_armyNotFound"].format(armya))
+	army_2 = armies.find(armyb)
+	if army_2 == None:
+		armies.add(Army(armyb))
+		army_2 = armies.find(armyb)
+		army_2.units = {}
+		army_2.location = army_1.location
+		say(strings_data[language]["system"]["makeArmy_success"].format(armyb))
+	if army_1.location == army_2.location:
+		for unit in army_1.units:
+			if unit in army_2.units:
+				army_2.units[unit] += army_1.units[unit]
+			else:
+				army_2.units[unit] = army_1.units[unit]
+			# and now just removing army1 from existence
+			armies.take(armya)
+			say(strings_data[language]["system"]["mergeArmy_success"].format(armya,armyb))
+	else:
+		say(strings_data[language]["error_messages"]["merge_fail_locationDifference"].format(armya, armyb))
+
 # waits for a specified period of time
 # AI handling and execution of delayed stuff like orders needs to go here
 @when("wait")
@@ -335,6 +362,9 @@ def wait():
 def debug(option):
 	if option == "context":
 		say(get_context())
+
+# Utility functions
+# mostly called by other things
 
 # takes a string name of unit, returns True/False if recruitable or not
 # TODO: add recruitability checks; factions, regions, locations and maybe improvements can affect this
@@ -364,9 +394,6 @@ def getLocation(location):
 #def getUnit
 
 # Loading data
-# TODO: remove requirement for scenarios.json, just find scenario.jsons below data dir
-# with open(os.path.join("data","scenarios.json")) as scenarios_json:
-# 	scenarios_data = json.load(scenarios_json)
 
 set_context('pregame.scenario_choice')
 scenario_files = []
@@ -385,7 +412,6 @@ for scenario in scenarios:
 	say(scenario)
 
 say(strings_data[language]["system"]["choose_scenario"])
-
 
 def prompt():
 	global current_date
