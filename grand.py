@@ -7,6 +7,10 @@ import sys
 import logging
 from datetime import datetime, timedelta
 import calendar
+from random import seed, randint
+
+# TODO: actions
+# TODO: hiding; roll stealth, store result as state 'hiding: value'. Heroes can Search and roll Awareness; 
 
 # TODO: don't really want to be throwing strings around except in user interaction; make everything use objects instead?
 # at least have everything consisten (aside from user input, always going to be a string)
@@ -20,6 +24,7 @@ with open(os.path.join("data","strings.json")) as strings_json:
 
 # language code; if you want more languages, add it to strings.json with a new code and change this, for the moment
 # need a better language selection; can get available things from strings.json
+# TODO: option to override terms in scenario.json?
 default_language = "en"
 language = default_language # TODO: change this with a selection
 
@@ -33,7 +38,10 @@ global wait_period
 global playable_factions
 global player_faction
 
+seed()
+
 agents = Bag()
+known_agents = Bag()
 regions = Bag()
 factions = Bag()
 units = Bag()
@@ -68,9 +76,12 @@ class Faction(Item):
 		if self == player_faction:
 			for resource in self.resources:
 				say(resources.find(resource).status())
-		say(strings_data[language]["system"]["locations_owned"])
+		say(strings_data[language]["system"]["faction_locations_owned"])
 		for location in self.locations:
 			say(location)
+		say(strings_data[language]["system"]["faction_agents_owned"])
+		for agent in self.agents:
+			say(agent)
 
 class Agent(Item):
 	def about(self):
@@ -85,7 +96,11 @@ class Resource(Item):
 		say(self.name + " (plural: " + self.plural + ")")
 		say(self.desc)
 	def status(self):
-		say(strings_data[language]["system"]["resource_amount"].format(player_faction.resources[self.name], self.name))
+		if player_faction.resources[self.name] > 1 or player_faction.resources[self.name] < 1:
+			term = self.plural
+		else:
+			term = self.name
+		say(strings_data[language]["system"]["resource_amount"].format(player_faction.resources[self.name], term))
 
 class Unit(Item):
 	def about(self):
@@ -154,8 +169,28 @@ def setScenario(scenario):
 				region.locations.add(Location(location["name"]))
 				new_location = region.locations.find(location["name"])
 				new_location.desc = location["desc"]
+				new_location.armies = Bag()
+				new_location.agents = Bag()
 			else:
 				logging.error("when creating location " + location["name"] + " could not find region " + location["region"])
+
+		# loading and setting up agents
+
+		with open(os.path.join("data",scenario_data['scenario']["agents"])) as agent_json:
+			agent_data = json.load(agent_json)
+
+		for agent in agent_data["agents"]:
+			agents.add(Agent(agent["name"], *agent["aliases"]))
+			new_agent = agents.find(agent["name"])
+			new_agent.desc = agent["desc"]
+			new_agent.traits = agent["traits"]
+			new_agent.stats = agent["stats"]
+			new_agent.states = {}
+			new_agent.inventory = Bag()
+			new_agent.location = None
+			new_agent.faction = None
+			if "hidden" not in new_agent.traits:
+				known_agents.add(new_agent)
 
 		# loading and setting up factions
 
@@ -175,20 +210,17 @@ def setScenario(scenario):
 				new_faction.resources[resource] = faction["starting_resources"][resource]
 			new_faction.locations = Bag()
 			new_faction.armies = Bag()
+			new_faction.agents = Bag()
+			for agent in faction["starting_agents"]:
+				a = agents.find(agent)
+				a.faction = new_faction
+				new_faction.agents.add(a)
+				a.location = getLocation(faction["starting_agents"][agent])
+				a.location.agents.add(a)
 			for location in faction["starting_locations"]:
 				new_faction.locations.add(getLocation(location))
 			if faction["playable"]:
 				playable_factions.add(new_faction)
-
-		# loading and setting up agents
-
-		with open(os.path.join("data",scenario_data['scenario']["agents"])) as agent_json:
-			agent_data = json.load(agent_json)
-
-		for agent in agent_data["agents"]:
-			agents.add(Agent(agent["name"]))
-			new_agent = agents.find(agent["name"])
-			new_agent.desc = agent["desc"]
 
 		# loading and setting up units
 
@@ -261,6 +293,8 @@ def setPlayableFaction(faction):
 
 # TODO: I don't like just using 'faction' for whatever the player can play. Should it be customisable?
 # TODO: make sure everything that should be listed is listed here
+# TODO: need to account for whether the player is aware of armies
+# TODO: account for scenario-specific strings for things?
 @when("list THING", context="playing_game")
 def list(thing):
 	if thing == "region" or thing == "regions":
@@ -279,6 +313,13 @@ def list(thing):
 	if thing == "unit" or thing == "units":
 		for unit in units:
 			say(unit)
+	if thing == "army" or thing == "armies":
+		for faction in factions:
+			for army in faction.armies:
+				say(army)
+	if thing == "agent" or thing == "agents":
+		for agent in known_agents:
+			say(agent)
 
 @when('about THING', context="playing_game")
 def about(thing):
@@ -290,7 +331,7 @@ def about(thing):
 			thingy = region.locations.find(thing)
 	if factions.find(thing) is not None:
 		thingy = factions.find(thing)
-	if agents.find(thing) is not None:
+	if known_agents.find(thing) is not None:
 		thingy = agents.find(thing)
 	if units.find(thing) is not None:
 		thingy = units.find(thing)
@@ -311,7 +352,7 @@ def status(thing):
 			thingy = region.locations.find(thing)
 	if factions.find(thing) is not None:
 		thingy = factions.find(thing)
-	if agents.find(thing) is not None:
+	if known_agents.find(thing) is not None:
 		thingy = agents.find(thing)
 	if getArmy(thing) is not None:
 		thingy = getArmy(thing)
@@ -352,15 +393,12 @@ def recruit(amount, unit, location, army):
 							if nameIsUnused(army, skip=["army"]):
 								if getArmy(army) is None:
 									# make an army
-									player_faction.armies.add(Army(army))
-									target_army = player_faction.armies.find(army)
-									target_army.units = {}
-									target_army.location = location
+									target_army = makeArmy(player_faction, army, location)
 									say(strings_data[language]["system"]["makeArmy_success"].format(army))
 								else:
 									# check army is at location
 									target_army = getArmy(army)
-								if target_army.location == location:
+								if target_army.location == getLocation(location):
 									# remove resources used
 									for resource in unit_recruited.cost:
 										player_faction.resources[resource] -= unit_recruited.cost[resource]*amt
@@ -394,10 +432,7 @@ def merge_armies(armya, armyb):
 	army_2 = player_faction.armies.find(armyb)
 	if nameIsUnused(armyb, skip=['army']):
 		if army_2 == None:
-			player_faction.armies.add(Army(armyb))
-			army_2 = player_faction.armies.find(armyb)
-			army_2.units = {}
-			army_2.location = army_1.location
+			army_2 = makeArmy(player_faction, armyb, army_1.location)
 			say(strings_data[language]["system"]["makeArmy_success"].format(armyb))
 		if army_1.location == army_2.location:
 			for unit in army_1.units:
@@ -412,6 +447,23 @@ def merge_armies(armya, armyb):
 			say(strings_data[language]["error_messages"]["merge_fail_locationDifference"].format(armya, armyb))
 	else:
 		say(strings_data[language]["error_messages"]["name_fail_alreadyInUse"].format(armyb))
+
+# TODO: hide
+# TODO: search
+# TODO: move
+# TODO: define basic things here but let users define extra actions through JSON; how to code response
+@when("order AGENT to ACTION")
+def order(agent, action):
+	global player_faction
+	if agentIsOwned(player_faction, agent):
+		a = player_faction.agents.find(agent)
+		if action == "hide":
+			result = roll(a.stats["stealth"])
+			say(strings_data[language]["system"]["action_roll_result"].format(a.name, "stealth", a.stats["stealth"], result))
+			say(strings_data[language]["system"]["action_hiding"].format(a.name))
+			a.states["hiding"] = result
+	else:
+		say(strings_data[language]["error_messages"]["order_fail_agentNotOwned"].format(agent))
 
 # waits for a specified period of time
 # AI handling and execution of delayed stuff like orders needs to go here
@@ -435,13 +487,33 @@ def wait():
 				current_date += timedelta(calendar.monthrange(current_date.year, current_date.month)[1])
 
 # debug command
-@when("debug OPTION")
+@when("debug info OPTION", context="playing_game.debug")
 def debug(option):
 	if option == "context":
 		say(get_context())
 
 # Utility functions
 # mostly called by other things
+
+# makes an army with a name at a location, for a faction; takes string name, Faction or string name faction, Location or string name location
+# returns the new army
+# TODO: see if check for duplicate name can be folded into this function, instead
+def makeArmy(faction, name, location):
+	new_army = None
+	if type(faction) is Faction:
+		owner_faction = faction
+	else:
+		owner_faction = factions.find(faction)
+	if type(location) is Location:
+		army_location = location
+	else:
+		army_location = getLocation(location)
+	owner_faction.armies.add(Army(name))
+	new_army = owner_faction.armies.find(name)
+	new_army.units = {}
+	new_army.location = army_location
+	army_location.armies.add(new_army)
+	return new_army
 
 # takes a string name of unit, returns True/False if recruitable or not
 # TODO: add recruitability checks; factions, regions, locations and maybe improvements can affect this
@@ -455,6 +527,20 @@ def regionIsOwned(faction,region):
 	return False
 
 # takes a string name of faction, string name of location, returns True/False if owned or not
+def agentIsOwned(faction,agent):
+	if type(faction) is Faction:
+		owner_faction = faction
+	else:
+		owner_faction = factions.find(faction)
+	if type(agent) is Agent:
+		a = agent
+	else:
+		a = agents.find(agent)
+	if a.faction is owner_faction:
+		return True
+	return False
+
+# takes a faction, an agent, returns True/False if owned or not
 def locationIsOwned(faction,location):
 	fac = factions.find(faction)
 	if location in fac.locations:
@@ -497,6 +583,12 @@ def nameIsUnused(name, skip = []):
 		if getArmy(name) is not None:
 			unused = False
 	return unused
+
+def roll(dice, sides=6):
+	total  = 0
+	for i in range (0, dice):
+		total += randint(1,sides)
+	return total
 
 # Loading data
 
