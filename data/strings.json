@@ -5,11 +5,14 @@
 		{
 			"choose_scenario": "Play which scenario? (type 'play/choose SCENARIONAME')",
 			"choose_faction": "Play which faction? (type 'play/choose FACTIONNAME')",
-			"locations_owned": "Locations held:",
+			"faction_locations_owned": "Locations held:",
+			"faction_agents_owned": "Agents:",
 			"recruit_success": "You recruit {} {} to the army {} at {}",
 			"makeArmy_success": "{} successfully created.",
 			"mergeArmy_success": "{} successfully merged into {}.",
 			"resource_amount": "You have {} {}.",
+			"action_roll_result": "{} rolled {} ({}) for a result of {}.",
+			"action_hiding": "{} is now hiding.",
 			"debugMode_enabled": "Debug mode enabled.",
 			"debugMode_disabled": "Debug mode disabled.",
 			"debugMode_switchFaction": "Now playing as {}."
@@ -31,7 +34,8 @@
 			"merge_fail_armyNotFound": "Can't find any army named {}.",
 			"merge_fail_locationDifference": "{} and {} are not at the same location.",
 			"name_fail_alreadyInUse": "Something is already called {}.",
-			"purchase_fail_notEnoughResource": "You don't have enough {}; you need {} and have {}."
+			"purchase_fail_notEnoughResource": "You don't have enough {}; you need {} and have {}.",
+			"order_fail_agentNotOwned": "{} won't listen to you."
 		}
 	}
 }
