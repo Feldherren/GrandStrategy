@@ -1,0 +1,31 @@
+{
+	"scenario":
+	{
+		"name": "Linden City",
+		"desc": "Superhero and supervillain themed campaign",
+		"factions": "linden_city\\teams.json",
+		"map": "linden_city\\map.json",
+		"units": "linden_city\\units.json",
+		"agents": "linden_city\\supers.json",
+		"start_date":
+		{
+			"year": 2000,
+			"month": 4,
+			"day": 7
+		},
+		"time_step":
+		{
+			"amount": 1,
+			"unit": "day"
+		},
+		"date_format": "%d %b %Y",
+		"resources":
+		[
+			{
+				"name":"dollar",
+				"plural":"dollars",
+				"desc":"Money."
+			}
+		]
+	}
+}

@@ -1,0 +1,98 @@
+{
+	"agent_term": "super",
+	"agent_plural": "supers",
+	"agents":
+	[
+		{
+			"name": "Stheno",
+			"aliases": [],
+			"desc": "Description of supervillain goes here.",
+			"traits":["supervillain"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		},
+		{
+			"name": "Medusa",
+			"aliases": [],
+			"desc": "Description of supervillain goes here.",
+			"traits":["supervillain"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		},
+		{
+			"name": "Old Stheno",
+			"aliases": [],
+			"desc": "Description of supervillain goes here.",
+			"traits":["supervillain", "hidden"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		},
+		{
+			"name": "Euryale",
+			"aliases": [],
+			"desc": "Description of supervillain goes here.",
+			"traits":["supervillain", "hidden"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		},
+		{
+			"name": "Ellis Sark",
+			"aliases": ["Ellis", "Sark"],
+			"desc": "Ellis Sark, leader of the Sharks. Not a big-time villain, or much of a villain at all, but he and his gang are a frequent target of minor villains and heroes alike, and he's getting a bit tired of it.",
+			"traits":["villain"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		},
+		{
+			"name": "Astra",
+			"aliases": [],
+			"desc": "Astra, new inheritor of the Starbond.",
+			"traits":["superhero"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		},
+		{
+			"name": "Paladain",
+			"aliases": ["Paladin"],
+			"desc": "A Dain recovered from a crashed ship and adopted by humans years ago.",
+			"traits":["superhero"],
+			"stats":
+			{
+				"attack": 1,
+				"defence": 1,
+				"stealth": 1,
+				"investigation": 1
+			}
+		}
+	]
+}

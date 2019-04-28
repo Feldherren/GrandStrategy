@@ -1,0 +1,83 @@
+{
+	"factions":
+	[
+		{
+			"name": "The Gorgon Sisters",
+			"aliases": ["Gorgon Sisters", "Gorgons", "Sisters"],
+			"desc": "Villainous pair with classical inspirations; each member (probably not actual sisters) taking her name from one or another of the mythical Gorgons from Greek mythology. Composed of Stheno and Medusa; as yet, no one has claimed the name Euryale.",
+			"starting_resources":
+			{
+				"dollar":100
+			},
+			"starting_agents":
+			{
+				"Stheno": "Northwest City",
+				"Medusa": "Northwest City"
+			},
+			"playable": true,
+			"intro_text": "Intro text for the Gorgon Sisters.",
+			"starting_locations": 
+			[
+				"Northwest City"
+			]
+		},
+		{
+			"name": "The Sharks",
+			"aliases": ["Sharks"],
+			"desc": "A gang led by Ellis Sark. Popular target of minor heroes looking to make their names, and minor villains looking for extra tribute; there are bigger fish in the sea, either way.",
+			"starting_resources":
+			{
+				"dollar":100
+			},
+			"starting_agents":
+			{
+				"Ellis Sark": "Southeast City"
+			},
+			"playable": true,
+			"intro_text": "Intro text for the Sharks.",
+			"starting_locations": 
+			[
+				"Southeast City"
+			]
+		},
+		{
+			"name": "The Guardians",
+			"aliases": ["Guardians"],
+			"desc": "Major superheroic team.",
+			"starting_resources":
+			{
+				"dollar":100
+			},
+			"starting_agents":
+			{
+				"Astra": "Guardian Tower",
+				"Paladain": "Guardian Tower"
+			},
+			"playable": true,
+			"intro_text": "Sample intro text for the pixie tribes.",
+			"starting_locations": 
+			[
+				"Guardian Tower"
+			]
+		},
+		{
+			"name": "Linden Police Department",
+			"aliases": ["LPD", "Police"],
+			"desc": "Linden City's law enforcement. Only mildly out of their depth.",
+			"starting_resources":
+			{
+				"dollar":100
+			},
+			"starting_agents":
+			{
+				
+			},
+			"playable": true,
+			"intro_text": "It's a dirty job, but someone's got to do it.",
+			"starting_locations": 
+			[
+				"Linden City Police Station"
+			]
+		}
+	]
+}

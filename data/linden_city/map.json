@@ -1,0 +1,90 @@
+{
+	"regions":
+	[
+		{
+			"name": "Northern Region",
+			"desc": "The northern half of Square Island."
+		},
+		{
+			"name": "Southern Region",
+			"desc": "The southern half of Square Island."
+		},
+		{
+			"name": "Linden City",
+			"desc": "Region for Linden City areas until I can come up with better."
+		}
+	],
+	"locations":
+	[
+		{
+			"region": "Northern Region",
+			"name": "Northwest City",
+			"desc": "City in the northwest of Square Island.",
+			"exits": 
+			[
+				{"east": "Northeast Village"},
+				{"south": "Southwest Hamlet"}
+			]
+		},
+		{
+			"region": "Northern Region",
+			"name": "Northeast Village",
+			"desc": "Village in the northeast of Square Island.",
+			"exits": 
+			[
+				{"west": "Northwest City"},
+				{"south": "Southeast City"}
+			]
+		},
+		{
+			"region": "Southern Region",
+			"name": "Southwest Hamlet",
+			"desc": "Hamlet in the southwest of Square Island.",
+			"exits": 
+			[
+				{"north": "Northwest City"},
+				{"east": "Southeast City"}
+			]
+		},
+		{
+			"region": "Southern Region",
+			"name": "Southeast City",
+			"desc": "City in the southeast of Square Island.",
+			"exits": 
+			[
+				{"north": "Northeast Village"},
+				{"west": "Southwest Hamlet"}
+			]
+		},
+		{
+			"region": "Linden City",
+			"name": "Linden Museum of Art",
+			"desc": "Prominent art museum and tourist attraction.",
+			"exits": []
+		},
+		{
+			"region": "Linden City",
+			"name": "Linden City Police Station",
+			"desc": "More or less the home of the Linden Police Department.",
+			"exits": []
+		},
+		{
+			"region": "Linden City",
+			"name": "Aster Memorial Park",
+			"desc": "A public park dedicated to the recently-deceased superhero Aster, built over the crater left by his last fight. There's a well-maintained statue of him in the centre, surrounded by flowers.",
+			"exits": []
+		},
+		{
+			"region": "Linden City",
+			"name": "Linden Reformatory",
+			"desc": "A theoretically high-security prison dedicated to containing and reforming supervillains, and villains with supervillainous aspirations. Given the number of supervillains who escape, it doesn't seem too effective.",
+			"exits": []
+		},
+		{
+			"region": "Linden City",
+			"name": "Guardian Tower",
+			"desc": "Guardian headquarters.",
+			"exits": []
+		}
+	]
+}
