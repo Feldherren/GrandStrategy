@@ -7,6 +7,7 @@
 			"choose_faction": "Play which faction? (type 'play/choose FACTIONNAME')",
 			"faction_locations_owned": "Locations held:",
 			"faction_agents_owned": "Agents:",
+			"agent_location": "Currently at {}.",
 			"recruit_success": "You recruit {} {} to the army {} at {}",
 			"makeArmy_success": "{} successfully created.",
 			"mergeArmy_success": "{} successfully merged into {}.",

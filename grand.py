@@ -89,6 +89,12 @@ class Agent(Item):
 		say(self.desc)
 	def status(self):
 		say(self.name)
+		say(strings_data[language]["system"]["agent_location"].format(self.location.name))
+		if len(self.states) > 0:
+			say("States:")
+			for state in self.states:
+				say(state + ": " + str(self.states[state]))
+
 
 # TODO: not sure the way we get player resources is consistent
 class Resource(Item):
@@ -448,10 +454,10 @@ def merge_armies(armya, armyb):
 	else:
 		say(strings_data[language]["error_messages"]["name_fail_alreadyInUse"].format(armyb))
 
-# TODO: hide
+# TODO: functions for coded things; this should just call those, instead of having all the code in this function.
 # TODO: search
 # TODO: move
-# TODO: define basic things here but let users define extra actions through JSON; how to code response
+# TODO: define basic things here but let users define extra actions through JSON; how to code response?
 @when("order AGENT to ACTION")
 def order(agent, action):
 	global player_faction
