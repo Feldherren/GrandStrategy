@@ -14,7 +14,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		},
 		{
 			"name": "Medusa",
@@ -27,7 +28,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		},
 		{
 			"name": "Old Stheno",
@@ -40,7 +42,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		},
 		{
 			"name": "Euryale",
@@ -53,7 +56,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		},
 		{
 			"name": "Ellis Sark",
@@ -66,7 +70,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		},
 		{
 			"name": "Astra",
@@ -79,7 +84,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		},
 		{
 			"name": "Paladain",
@@ -92,7 +98,8 @@
 				"defence": 1,
 				"stealth": 1,
 				"investigation": 1
-			}
+			},
+			"initial_states":{}
 		}
 	]
 }

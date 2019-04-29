@@ -225,6 +225,8 @@ def setScenario(scenario):
 			new_agent.traits = agent["traits"]
 			new_agent.stats = agent["stats"]
 			new_agent.states = {}
+			for state in agent["initial_states"]:
+				new_agent.states[state] = agent["initial_states"][state]
 			new_agent.inventory = Bag()
 			new_agent.location = None
 			new_agent.faction = None
