@@ -9,6 +9,10 @@ from datetime import datetime, timedelta
 import calendar
 from random import seed, randint
 
+# TODO: consider linden city scenario
+# map starts in tenuous control of the police
+# police are allied with superheroes
+
 # TODO: actions
 # TODO: hiding; roll stealth, store result as state 'hiding: value'. Heroes can Search and roll Awareness; 
 
@@ -93,8 +97,37 @@ class Agent(Item):
 		if len(self.states) > 0:
 			say("States:")
 			for state in self.states:
-				say(state + ": " + str(self.states[state]))
+				say(state)
 
+	def executeOrder(self):
+		if self.order == "hide":
+			self.hide()
+		if self.order == "search":
+			self.search()
+		self.order = None
+
+	# TODO: remember to clear hiding status after appropriate actions
+	# moving shouldn't clear it?
+	def hide(self):
+		result = roll(self.stats["stealth"])
+		if get_context() == "playing_game.debug":
+			say(strings_data[language]["system"]["action_roll_result"].format(self.name, "stealth", self.stats["stealth"], result))
+		if agentIsOwned(player_faction, self):
+			say(strings_data[language]["system"]["action_hiding"].format(self.name))
+		self.states["hiding"] = result
+		# TODO: omit agents that are hiding from area status text
+
+	def search(self):
+		result = roll(self.stats["investigation"])
+		if get_context() == "playing_game.debug":
+			say(strings_data[language]["system"]["action_roll_result"].format(self.name, "investigation", self.stats["investigation"], result))
+		if agentIsOwned(player_faction, self):
+			say(strings_data[language]["system"]["action_searching"].format(self.name, self.location))
+		for agent in self.location.agents:
+			if agent is not self:
+				if "hiding" in agent.states:
+					if result >= agent.states["hiding"]:
+						say(strings_data[language]["system"]["action_searching_foundAgent"].format(self.name, agent.name, self.location))
 
 # TODO: not sure the way we get player resources is consistent
 class Resource(Item):
@@ -195,6 +228,7 @@ def setScenario(scenario):
 			new_agent.inventory = Bag()
 			new_agent.location = None
 			new_agent.faction = None
+			new_agent.order = None
 			if "hidden" not in new_agent.traits:
 				known_agents.add(new_agent)
 
@@ -464,10 +498,11 @@ def order(agent, action):
 	if agentIsOwned(player_faction, agent):
 		a = player_faction.agents.find(agent)
 		if action == "hide":
-			result = roll(a.stats["stealth"])
-			say(strings_data[language]["system"]["action_roll_result"].format(a.name, "stealth", a.stats["stealth"], result))
-			say(strings_data[language]["system"]["action_hiding"].format(a.name))
-			a.states["hiding"] = result
+			a.order = "hide"
+			say(strings_data[language]["system"]["agent_order_hide"].format(a, a.location))
+		if action == "search":
+			a.order = "search"
+			say(strings_data[language]["system"]["agent_order_search"].format(a, a.location))
 	else:
 		say(strings_data[language]["error_messages"]["order_fail_agentNotOwned"].format(agent))
 
@@ -478,6 +513,10 @@ def order(agent, action):
 @when("pass time")
 @when("pass")
 def wait():
+	# TODO: AI
+	# executing orders
+	for agent in agents:
+		agent.executeOrder()
 	# advancing the date
 	global current_date
 	global wait_unit
