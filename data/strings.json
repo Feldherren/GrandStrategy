@@ -8,6 +8,7 @@
 			"faction_locations_owned": "Locations held:",
 			"faction_agents_owned": "Agents:",
 			"agent_location": "Currently at {}.",
+			"agent_location_none": "Current whereabouts unknown.",
 			"agent_order_hide": "{} is now ordered to hide at {}.",
 			"agent_order_search": "{} is now ordered to search {}.",
 			"action_hiding": "{} is now hiding.",
