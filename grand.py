@@ -12,6 +12,9 @@ from random import seed, randint
 # TODO: consider linden city scenario
 # map starts in tenuous control of the police
 # police are allied with superheroes
+# old stheno: starts hiding
+# euryale: inactive
+# Should Aster start in the graveyard or the memorial park?
 
 # TODO: actions
 # TODO: hiding; roll stealth, store result as state 'hiding: value'. Heroes can Search and roll Awareness; 
@@ -45,6 +48,7 @@ global player_faction
 seed()
 
 agents = Bag()
+active_agents = Bag()
 known_agents = Bag()
 regions = Bag()
 factions = Bag()
@@ -93,11 +97,14 @@ class Agent(Item):
 		say(self.desc)
 	def status(self):
 		say(self.name)
-		say(strings_data[language]["system"]["agent_location"].format(self.location.name))
+		if self.location is not None:
+			say(strings_data[language]["system"]["agent_location"].format(self.location.name))
+		else:
+			say(strings_data[language]["system"]["agent_location_none"])
 		if len(self.states) > 0:
 			say("States:")
 			for state in self.states:
-				say(state)
+				say(state.capitalize())
 
 	def executeOrder(self):
 		if self.order == "hide":
@@ -231,8 +238,10 @@ def setScenario(scenario):
 			new_agent.location = None
 			new_agent.faction = None
 			new_agent.order = None
-			if "hidden" not in new_agent.traits:
+			if "unknown" not in new_agent.traits:
 				known_agents.add(new_agent)
+			if "inactive" not in new_agent.traits:
+				active_agents.add(new_agent)
 
 		# loading and setting up factions
 
@@ -517,7 +526,7 @@ def order(agent, action):
 def wait():
 	# TODO: AI
 	# executing orders
-	for agent in agents:
+	for agent in active_agents:
 		agent.executeOrder()
 	# advancing the date
 	global current_date
